@@ -1,7 +1,8 @@
 FROM tomcat:9.0.36
 
 
-ADD current.war /usr/local/tomcat/webapps/
+ADD regression.war /usr/local/tomcat/webapps/
+RUN wget -O dd-java-agent.jar 'https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.datadoghq&a=dd-java-agent&v=LATEST'
 
 EXPOSE 8080
 
