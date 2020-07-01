@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: ridesafe-learning
+   annotations:
+    ad.datadoghq.com/ridesafe-learning.logs: '[{"source":"tomcat","service":"tomcat"}]'
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ridesafe-learning
+  template:
+    metadata:
+      labels:
+        app: ridesafe-learning
+    spec:
+      containers:
+        - name: ridesafe-learning
+          image: localhost:32000/ridesafe-learning:registry
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+        
+            - name: JAVA_OPTS
+              value: "-javaagent:/usr/local/tomcat/dd-java-agent.jar -Ddd.jmxfetch.tomcat.enabled=true"
+            - name: DD_SERVICE_NAME
+              value: "RideSafe-Learning"
+            - name: DD_TAGS
+              value: "env:dev"
+            - name: DD_TRACE_ANALYTICS_ENABLED
+              value: "true"
+            - name: DD_TRACE_DEBUG
+              value: "false"
+            - name: DD_LOGS_INJECTION
+              value: "true"
+            - name: DD_PROFILING_ENABLED
+              value: "true"
+            - name: DD_PROFILING_API_KEY
+              value: ""
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ridesafe-learning
+spec:
+  selector:
+    app: ridesafe-learning
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      nodePort: 30002
+  type: LoadBalancer
+
+
